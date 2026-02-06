@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useMutation } from "@tanstack/react-query";
 import { calculateTax, TaxCalculationResult } from "@/mocks/taxData";
+import { addCalculation, getFiscalYear } from "@/mocks/calculationStore";
 
 const incomeSchema = z.object({
   renta4ta: z.coerce.number().min(0, "Debe ser mayor o igual a 0"),
@@ -40,9 +41,12 @@ export default function Income() {
     },
   });
 
+  const fiscalYear = getFiscalYear();
+
   const mutation = useMutation({
     mutationFn: simulateCalculation,
     onSuccess: (data) => {
+      addCalculation(data);
       navigate("/resultados", { state: { result: data } });
     },
   });
@@ -60,14 +64,14 @@ export default function Income() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/dashboard")}
               className="shrink-0"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
               <h1 className="text-lg font-semibold text-foreground">Ingresos del Contribuyente</h1>
-              <p className="text-sm text-muted-foreground">Declara tus rentas de trabajo</p>
+              <p className="text-sm text-muted-foreground">Cálculo correspondiente al año {fiscalYear}</p>
             </div>
           </div>
         </div>
@@ -84,8 +88,8 @@ export default function Income() {
                     <FileText className="w-5 h-5 text-accent" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Renta 4ta Categoría</CardTitle>
-                    <CardDescription>Recibos por Honorarios</CardDescription>
+                    <CardTitle className="text-lg">Ingresos por Recibos por Honorarios</CardTitle>
+                    <CardDescription>Rentas de 4ta categoría</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -113,6 +117,7 @@ export default function Income() {
                           </div>
                         </FormControl>
                         <FormMessage />
+                        <p className="text-xs text-muted-foreground">Si no cuentas con este tipo de ingreso, puedes dejar el campo vacío.</p>
                       </FormItem>
                     )}
                   />
@@ -149,8 +154,8 @@ export default function Income() {
                     <Briefcase className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Renta 5ta Categoría</CardTitle>
-                    <CardDescription>Ingresos en Planilla</CardDescription>
+                    <CardTitle className="text-lg">Ingresos en Planilla</CardTitle>
+                    <CardDescription>Rentas de 5ta categoría</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -178,6 +183,7 @@ export default function Income() {
                           </div>
                         </FormControl>
                         <FormMessage />
+                        <p className="text-xs text-muted-foreground">Si no cuentas con este tipo de ingreso, puedes dejar el campo vacío.</p>
                       </FormItem>
                     )}
                   />

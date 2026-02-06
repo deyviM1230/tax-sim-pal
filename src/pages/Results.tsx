@@ -1,10 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Download, CheckCircle2, XCircle, Receipt, Building2, Percent, Calculator, Wallet, Hotel, Stethoscope, Home, UserCheck } from "lucide-react";
+import { ArrowLeft, Download, CheckCircle2, XCircle, Receipt, Building2, Percent, Calculator } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { TaxCalculationResult, UIT } from "@/mocks/taxData";
 import { useEffect } from "react";
+import ExpenseBar from "@/components/ExpenseBar";
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("es-PE", {
@@ -40,7 +41,7 @@ export default function Results() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate("/ingresos")}
+                onClick={() => navigate("/dashboard")}
                 className="shrink-0"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -91,7 +92,7 @@ export default function Results() {
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2 text-accent">
                 <Receipt className="w-4 h-4" />
-                <CardDescription className="text-accent font-medium">Renta 4ta Categoría</CardDescription>
+                <CardDescription className="text-accent font-medium">Ingresos por Recibos por Honorarios</CardDescription>
               </div>
             </CardHeader>
             <CardContent>
@@ -104,7 +105,7 @@ export default function Results() {
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2 text-primary">
                 <Building2 className="w-4 h-4" />
-                <CardDescription className="text-primary font-medium">Renta 5ta Categoría</CardDescription>
+                <CardDescription className="text-primary font-medium">Ingresos en Planilla</CardDescription>
               </div>
             </CardHeader>
             <CardContent>
@@ -141,74 +142,8 @@ export default function Results() {
           </CardContent>
         </Card>
 
-        {/* Gastos Deducibles */}
-        <Card className="shadow-card border-0 animate-slide-up" style={{ animationDelay: "0.25s" }}>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Wallet className="w-5 h-5 text-primary" />
-              Gastos Deducibles
-            </CardTitle>
-            <CardDescription>Máximo permitido: 3 UIT ({formatCurrency(3 * UIT)})</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between items-center py-2">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-secondary">
-                  <Hotel className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">Hoteles y Restaurantes</p>
-                  <p className="text-sm text-muted-foreground">15% del gasto</p>
-                </div>
-              </div>
-              <p className="font-semibold text-foreground">{formatCurrency(result.gastosDeducibles.hotelesRestaurantes)}</p>
-            </div>
-            <Separator />
-            <div className="flex justify-between items-center py-2">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-secondary">
-                  <Stethoscope className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">Servicios Profesionales y Médicos</p>
-                  <p className="text-sm text-muted-foreground">30% del gasto</p>
-                </div>
-              </div>
-              <p className="font-semibold text-foreground">{formatCurrency(result.gastosDeducibles.serviciosProfesionales)}</p>
-            </div>
-            <Separator />
-            <div className="flex justify-between items-center py-2">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-secondary">
-                  <Home className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">Arrendamiento</p>
-                  <p className="text-sm text-muted-foreground">30% del gasto</p>
-                </div>
-              </div>
-              <p className="font-semibold text-foreground">{formatCurrency(result.gastosDeducibles.arrendamiento)}</p>
-            </div>
-            <Separator />
-            <div className="flex justify-between items-center py-2">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-secondary">
-                  <UserCheck className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">Trabajadoras del Hogar</p>
-                  <p className="text-sm text-muted-foreground">100% del gasto</p>
-                </div>
-              </div>
-              <p className="font-semibold text-foreground">{formatCurrency(result.gastosDeducibles.trabajadorasHogar)}</p>
-            </div>
-            <Separator />
-            <div className="flex justify-between items-center py-3 bg-secondary/50 rounded-lg px-3 -mx-3">
-              <p className="font-semibold text-foreground">Total Gastos Deducibles</p>
-              <p className="text-lg font-bold text-primary">{formatCurrency(result.gastosDeducibles.total)}</p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Gastos Deducibles - Storage Bar */}
+        <ExpenseBar gastosDeducibles={result.gastosDeducibles} />
 
         {/* Resumen del Cálculo */}
         <Card className="shadow-card border-0 animate-slide-up" style={{ animationDelay: "0.3s" }}>
@@ -245,7 +180,7 @@ export default function Results() {
 
         {/* Botón Nueva Simulación */}
         <Button
-          onClick={() => navigate("/ingresos")}
+          onClick={() => navigate("/dashboard")}
           variant="outline"
           className="w-full h-12"
         >
