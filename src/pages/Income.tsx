@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Calculator, FileText, Briefcase, Loader2 } from "lucide-react";
+import { ArrowLeft, Calculator, FileText, Briefcase, Loader2, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,9 @@ const incomeSchema = z.object({
   periodo4ta: z.enum(["mensual", "anual"]),
   renta5ta: z.coerce.number().min(0, "Debe ser mayor o igual a 0"),
   periodo5ta: z.enum(["mensual", "anual"]),
+}).refine((data) => data.renta4ta > 0 || data.renta5ta > 0, {
+  message: "Debes ingresar al menos un tipo de ingreso: honorarios o planilla.",
+  path: ["root"],
 });
 
 type IncomeFormData = z.infer<typeof incomeSchema>;
@@ -212,10 +215,18 @@ export default function Income() {
               </CardContent>
             </Card>
 
+            {/* Validation Error */}
+            {form.formState.errors.root && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm font-medium">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {form.formState.errors.root.message}
+              </div>
+            )}
+
             {/* Submit Button */}
             <Button
               type="submit"
-              disabled={mutation.isPending}
+              disabled={mutation.isPending || (!form.watch("renta4ta") && !form.watch("renta5ta"))}
               className="w-full h-14 text-lg font-semibold bg-gradient-primary hover:opacity-90 transition-all shadow-lg"
             >
               {mutation.isPending ? (
