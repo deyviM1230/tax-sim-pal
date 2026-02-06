@@ -41,7 +41,7 @@ export default function Results() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate("/ingresos")}
+                onClick={() => navigate("/dashboard")}
                 className="shrink-0"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -92,7 +92,7 @@ export default function Results() {
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2 text-accent">
                 <Receipt className="w-4 h-4" />
-                <CardDescription className="text-accent font-medium">Renta 4ta Categoría</CardDescription>
+                <CardDescription className="text-accent font-medium">Ingresos por Recibos por Honorarios</CardDescription>
               </div>
             </CardHeader>
             <CardContent>
@@ -105,7 +105,7 @@ export default function Results() {
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2 text-primary">
                 <Building2 className="w-4 h-4" />
-                <CardDescription className="text-primary font-medium">Renta 5ta Categoría</CardDescription>
+                <CardDescription className="text-primary font-medium">Ingresos en Planilla</CardDescription>
               </div>
             </CardHeader>
             <CardContent>
@@ -180,7 +180,7 @@ export default function Results() {
 
         {/* Botón Nueva Simulación */}
         <Button
-          onClick={() => navigate("/ingresos")}
+          onClick={() => navigate("/dashboard")}
           variant="outline"
           className="w-full h-12"
         >

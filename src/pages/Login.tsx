@@ -53,7 +53,7 @@ export default function Login() {
 
   const onSubmit = (data: LoginFormData) => {
     console.log("Login:", data);
-    navigate("/ingresos");
+    navigate("/dashboard");
   };
 
   return (
