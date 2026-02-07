@@ -52,8 +52,8 @@ function CalculationTable({ items, onView }: { items: SavedCalculation[]; onView
               <TableCell>{formatCurrency(calc.renta4taAnual)}</TableCell>
               <TableCell>{formatCurrency(calc.renta5taAnual)}</TableCell>
               <TableCell>
-                <Badge variant={calc.tipoSaldo === "favor" ? "default" : "destructive"} className={calc.tipoSaldo === "favor" ? "bg-success text-success-foreground" : ""}>
-                  {calc.tipoSaldo === "favor" ? "A favor" : "A pagar"} {formatCurrency(calc.saldoFinal)}
+                <Badge variant={calc.tipoSaldo === "favor" ? "destructive" : "destructive"} className={calc.tipoSaldo === "favor" ? "bg-[hsl(0,100%,35%)] text-white font-bold" : ""}>
+                  {calc.tipoSaldo === "favor" ? "Te roban" : "A pagar"} {formatCurrency(calc.saldoFinal)}
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
@@ -88,7 +88,7 @@ export default function Dashboard() {
               <Calculator className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-foreground">Sistema Tributario</h1>
+              <h1 className="text-lg font-semibold text-foreground">Sunat CTM</h1>
               <p className="text-sm text-muted-foreground">
                 Cálculo correspondiente al año {fiscalYear}
               </p>
