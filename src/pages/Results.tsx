@@ -63,7 +63,7 @@ export default function Results() {
         {/* Resultado Principal */}
         <Card
           className={`shadow-card border-0 overflow-hidden animate-slide-up ${
-            isFavor ? "bg-gradient-success" : "bg-gradient-destructive"
+            isFavor ? "bg-[linear-gradient(135deg,hsl(0,90%,45%),hsl(0,100%,35%))]" : "bg-gradient-destructive"
           }`}
         >
           <CardContent className="p-6 text-center text-primary-foreground">
@@ -75,12 +75,12 @@ export default function Results() {
               )}
             </div>
             <p className="text-sm font-medium opacity-90 uppercase tracking-wide mb-1">
-              {isFavor ? "Saldo a favor del contribuyente" : "Saldo a pagar a SUNAT"}
+              {isFavor ? "Sunat te está robando" : "Saldo a pagar a SUNAT"}
             </p>
             <p className="text-4xl font-bold mb-2">{formatCurrency(result.saldoFinal)}</p>
             <p className="text-sm opacity-80">
               {isFavor
-                ? "Puedes solicitar devolución"
+                ? "Cómprale algo con esa plata"
                 : "Debes regularizar este monto"}
             </p>
           </CardContent>
