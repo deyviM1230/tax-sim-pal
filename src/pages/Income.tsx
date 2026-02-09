@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Calculator, FileText, Briefcase, Loader2, Send, AlertCircle } from "lucide-react";
+import { ArrowLeft, Calculator, FileText, Briefcase, Loader2, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useCalculationStore } from "@/stores/useCalculationStore";
 import { toast } from "sonner";
-import axios from "axios"; // <--- Importamos Axios
+import axios from "axios";
 
-// Esquema de validación
 const incomeSchema = z.object({
   renta4ta: z.coerce.number().min(0, "Debe ser mayor o igual a 0"),
   periodo4ta: z.enum(["mensual", "anual"]),
@@ -30,10 +29,9 @@ export default function Income() {
   const navigate = useNavigate();
   const { taxProfile } = useCalculationStore();
   
-  const [isSending, setIsSending] = useState(false);
+  // Solo necesitamos un estado de carga
   const [isCalculating, setIsCalculating] = useState(false);
 
-  // Validación de acceso
   if (!taxProfile) {
     navigate("/nuevo-calculo"); 
     return null;
@@ -49,96 +47,75 @@ export default function Income() {
     },
   });
 
-  // Construcción del Payload
   const buildPayload = (data: IncomeFormData) => {
     const userIncomeTypesDto = [];
 
-    if (data.renta4ta > 0) {
+    if (Number(data.renta4ta) > 0) {
       userIncomeTypesDto.push({
         incomeType: "PROFESSIONAL_FEES",
         periodIncomeType: data.periodo4ta === "mensual" ? "MONTHLY" : "ANNUAL",
-        income: data.renta4ta
+        income: Number(data.renta4ta)
       });
     }
 
-    if (data.renta5ta > 0) {
+    if (Number(data.renta5ta) > 0) {
       userIncomeTypesDto.push({
         incomeType: "PAYROLL",
         periodIncomeType: data.periodo5ta === "mensual" ? "MONTHLY" : "ANNUAL",
-        income: data.renta5ta
+        income: Number(data.renta5ta)
       });
     }
-
+    
     const userTaxProfileDto = {
       documentType: taxProfile.documentType,
       document: taxProfile.document,
-      ...(taxProfile.documentType === "RUC" && { username: taxProfile.username }),
+      ...(taxProfile.documentType === "RUC" && taxProfile.username && { username: taxProfile.username }),
       [taxProfile.documentType === "DNI" ? "solkey" : "solKey"]: taxProfile.solkey
     };
 
     return { userTaxProfileDto, userIncomeTypesDto };
   };
 
-  // --- LÓGICA 1: MANDAR DATOS CON AXIOS ---
-  const handleSendData = async (data: IncomeFormData) => {
-    setIsSending(true);
+  const saveToBackend = async (data: IncomeFormData): Promise<boolean> => {
     try {
       const payload = buildPayload(data);
-      console.log("Enviando datos:", payload);
+      console.log("Enviando Payload:", payload);
 
-      // Usamos ruta relativa para aprovechar el Proxy de Vite
       const response = await axios.post("/api/auth/user-data", payload);
-
-      // Axios lanza error si status no es 2xx, así que si llegamos aquí, fue un éxito.
-      // Validamos la respuesta específica de tu backend
       const result = response.data;
       const isSuccess = result === true || result?.success === true;
 
-      if (isSuccess) {
-        toast.success("¡Datos registrados correctamente!");
-      } else {
-        toast.error("El servidor indicó que no se pudieron guardar los datos.");
+      if (!isSuccess) {
+        toast.error("El servidor rechazó los datos.");
+        return false;
       }
+      return true;
+
     } catch (error: any) {
-      console.error("Error Axios:", error);
-      
-      // Manejo de errores específico de Axios
-      if (error.response) {
-        // El servidor respondió con un código de error (4xx, 5xx)
-        toast.error(`Error del servidor: ${error.response.data?.message || error.response.statusText}`);
-      } else if (error.request) {
-        // No hubo respuesta (servidor caído o timeout)
-        toast.error("El servidor no responde. Verifica que el backend esté encendido.");
+      console.error("Error al guardar:", error);
+      if (error.response?.status === 500) {
+          toast.error("Error Interno del Servidor (500). Revisa el formato de tus datos.");
       } else {
-        toast.error("Error al preparar la solicitud.");
+          toast.error("Error de conexión al guardar.");
       }
-    } finally {
-      setIsSending(false);
+      return false;
     }
   };
 
-  // --- LÓGICA 2: CALCULAR IMPUESTO CON AXIOS ---
+  // Esta es la ÚNICA función que necesitas
   const handleCalculate = async (data: IncomeFormData) => {
     setIsCalculating(true);
-    try {
-        const payload = buildPayload(data);
+    
+    // 1. Guardar
+    const saved = await saveToBackend(data);
 
-        // Llamada para iniciar cálculo
-        await axios.post("/api/tax/init-calculation", payload);
-        
-        toast.info("Cálculo iniciado. Conectando...");
-        navigate("/resultados");
-
-    } catch (error: any) {
-        console.error("Error cálculo:", error);
-        if (error.response) {
-            toast.error(`Error al iniciar cálculo: ${error.response.data?.message || "Error desconocido"}`);
-        } else {
-            toast.error("No se pudo conectar para iniciar el cálculo.");
-        }
-    } finally {
-        setIsCalculating(false);
+    // 2. Navegar (si se guardó bien)
+    if (saved) {
+        toast.info("Datos guardados. Iniciando simulación...");
+        navigate("/resultados"); 
     }
+
+    setIsCalculating(false);
   };
 
   return (
@@ -161,7 +138,6 @@ export default function Income() {
         <Form {...form}>
           <form className="space-y-6">
             
-            {/* Renta 4ta Categoría */}
             <Card className="shadow-card border-0 animate-slide-up">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
@@ -215,7 +191,6 @@ export default function Income() {
               </CardContent>
             </Card>
 
-            {/* Renta 5ta Categoría */}
             <Card className="shadow-card border-0 animate-slide-up" style={{ animationDelay: "0.1s" }}>
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3">
@@ -269,7 +244,6 @@ export default function Income() {
               </CardContent>
             </Card>
 
-            {/* Errores */}
             {form.formState.errors.root && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm font-medium">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -277,30 +251,16 @@ export default function Income() {
               </div>
             )}
 
-            {/* BOTONES */}
+            {/* UN SOLO BOTÓN DE ACCIÓN */}
             <div className="space-y-3 pt-2">
-                <Button
-                    type="button" 
-                    onClick={form.handleSubmit(handleSendData)}
-                    disabled={isSending || isCalculating}
-                    variant="outline"
-                    className="w-full h-12 text-base font-medium border-primary/20 hover:bg-primary/5 text-primary"
-                >
-                    {isSending ? (
-                        <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Registrando...</>
-                    ) : (
-                        <><Send className="w-5 h-5 mr-2" /> Mandar Datos</>
-                    )}
-                </Button>
-
                 <Button
                     type="button"
                     onClick={form.handleSubmit(handleCalculate)}
-                    disabled={isSending || isCalculating}
+                    disabled={isCalculating}
                     className="w-full h-14 text-lg font-semibold bg-gradient-primary hover:opacity-90 shadow-lg"
                 >
                     {isCalculating ? (
-                        <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Iniciando...</>
+                        <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Procesando...</>
                     ) : (
                         <><Calculator className="w-5 h-5 mr-2" /> Calcular Impuesto</>
                     )}

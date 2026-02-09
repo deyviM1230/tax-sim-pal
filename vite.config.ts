@@ -21,6 +21,12 @@ export default defineConfig(({ mode }) => ({
           });
         },
       },
+      "/ws": {
+        target: "wss://ptzsk572-4000.brs.devtunnels.ms", // Nota: wss:// para conexiones seguras
+        ws: true, // Habilita soporte para WebSockets
+        changeOrigin: true,
+        secure: false,
+      },
     },  
     hmr: {
       overlay: false,
