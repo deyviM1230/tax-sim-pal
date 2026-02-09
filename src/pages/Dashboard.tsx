@@ -107,7 +107,7 @@ export default function Dashboard() {
               </div>
               {calculations.length > 0 && (
                 <Button
-                  onClick={() => navigate("/ingresos")}
+                  onClick={() => navigate("/sunat")}
                   className="bg-gradient-primary hover:opacity-90 transition-opacity gap-2"
                 >
                   <Plus className="w-4 h-4" />
@@ -118,7 +118,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             {calculations.length === 0 ? (
-              <EmptyState onNew={() => navigate("/ingresos")} />
+              <EmptyState onNew={() => navigate("/sunat")} />
             ) : (
               <CalculationTable items={calculations} onView={handleView} />
             )}
