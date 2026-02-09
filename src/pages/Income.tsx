@@ -74,7 +74,7 @@ export default function Income() {
             </Button>
             <div>
               <h1 className="text-lg font-semibold text-foreground">Ingresos del Contribuyente</h1>
-              <p className="text-sm text-muted-foreground">Cálculo correspondiente al año {fiscalYear}</p>
+              <p className="text-sm text-muted-foreground">Paso 2 de 3 · Año {fiscalYear}</p>
             </div>
           </div>
         </div>

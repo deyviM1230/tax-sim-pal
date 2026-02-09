@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import SunatCredentials from "./pages/SunatCredentials";
 import Income from "./pages/Income";
 import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ const App = () => (
           {/* Grupo de Rutas Protegidas */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/sunat" element={<SunatCredentials />} />
             <Route path="/ingresos" element={<Income />} />
             <Route path="/resultados" element={<Results />} />
           </Route>
