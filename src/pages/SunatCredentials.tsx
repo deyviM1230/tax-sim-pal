@@ -11,9 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { authSchema, type LoginRequest } from "@/lib/auth-schema";
 import { toast } from "sonner";
+// 1. IMPORTANTE: Importamos el store para guardar los datos
+import { useCalculationStore } from "@/stores/useCalculationStore";
 
 export default function SunatCredentials() {
   const navigate = useNavigate();
+  // 2. Obtenemos la función para guardar en el estado global
+  const setTaxProfile = useCalculationStore((state) => state.setTaxProfile);
+  
   const [tipoId, setTipoId] = useState<"RUC" | "DNI">("RUC");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,16 +37,33 @@ export default function SunatCredentials() {
     if (value === "RUC") {
       form.reset({ documentType: "RUC", document: "", username: "", solKey: "" });
     } else {
-      form.reset({ documentType: "DNI", document: "", solKey: "" });
+      // TypeScript a veces se queja si username falta, así que lo pasamos undefined o vacío seguro
+      form.reset({ documentType: "DNI", document: "", solKey: "", username: undefined });
     }
   };
 
-  const onSubmit = async (_data: LoginRequest) => {
+  const onSubmit = async (data: LoginRequest) => {
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    toast.success("Credenciales SUNAT verificadas");
-    navigate("/ingresos");
-    setIsLoading(false);
+    
+    try {
+      // 3. Guardamos los datos en el Store en lugar de solo esperar
+      // Esto hace que estén disponibles en la siguiente página (/ingresos)
+      setTaxProfile({
+        documentType: data.documentType,
+        document: data.document,
+        username: data.documentType === "RUC" ? data.username : undefined,
+        solKey: data.solKey
+      });
+
+      toast.success("Datos guardados temporalmente");
+      
+      // 4. Ahora sí avanzamos
+      navigate("/ingresos");
+    } catch (error) {
+      toast.error("Error al procesar los datos");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,7 +76,7 @@ export default function SunatCredentials() {
             </Button>
             <div>
               <h1 className="text-lg font-semibold text-foreground">Credenciales SUNAT</h1>
-              <p className="text-sm text-muted-foreground">Paso 1 de 3</p>
+              <p className="text-sm text-muted-foreground">Paso 1 de 2</p>
             </div>
           </div>
         </div>
@@ -95,7 +117,7 @@ export default function SunatCredentials() {
                       <FormControl>
                         <div className="relative">
                           {tipoId === "RUC" ? <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                             : <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />}
+                                                             : <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />}
                           <Input {...field} placeholder={tipoId === "RUC" ? "20123456789" : "12345678"} maxLength={tipoId === "RUC" ? 11 : 8} className="pl-10 h-11" disabled={isLoading} />
                         </div>
                       </FormControl>
@@ -141,7 +163,7 @@ export default function SunatCredentials() {
                 />
 
                 <Button type="submit" className="w-full h-12 text-base font-medium bg-gradient-primary" disabled={isLoading}>
-                  {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verificando...</> : "Continuar"}
+                  {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...</> : "Continuar"}
                 </Button>
               </form>
             </Form>

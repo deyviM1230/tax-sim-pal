@@ -1,6 +1,7 @@
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
-    // La URL base de tu backend proporcionada en el contexto
-    baseURL: "https://ptzsk572-3000.brs.devtunnels.ms" 
+    // CAMBIO IMPORTANTE: Ahora apuntamos a la misma URL donde corre tu app
+    // El proxy de Vite interceptará las llamadas a /api/*
+    baseURL: "http://localhost:8080" 
 });

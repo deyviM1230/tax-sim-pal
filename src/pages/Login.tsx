@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, KeyRound, Loader2, Building2 } from "lucide-react";
+import { Mail, KeyRound, Loader2, Building2, User } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client"; // Importamos tu cliente configurado
 
 export default function Login() {
   const navigate = useNavigate();
+  const [name, setName] = useState(""); // Necesario para el registro
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -16,18 +18,48 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error("Completa todos los campos");
-      return;
-    }
     setIsLoading(true);
-    // Simular autenticación
-    await new Promise((r) => setTimeout(r, 1000));
-    localStorage.setItem("accessToken", "mock-token");
-    localStorage.setItem("refreshToken", "mock-refresh");
-    toast.success(mode === "login" ? "Sesión iniciada correctamente" : "Cuenta creada correctamente");
-    navigate("/dashboard");
-    setIsLoading(false);
+
+    try {
+      if (mode === "login") {
+        // --- LÓGICA DE INICIO DE SESIÓN ---
+        const { data, error } = await authClient.signIn.email({
+          email,
+          password,
+        });
+
+        if (error) {
+          toast.error(error.message || "Error al iniciar sesión");
+        } else {
+          toast.success("¡Bienvenido de nuevo!");
+          navigate("/dashboard");
+        }
+      } else {
+        // --- LÓGICA DE REGISTRO ---
+        if (!name) {
+          toast.error("El nombre es requerido para registrarse");
+          setIsLoading(false);
+          return;
+        }
+
+        const { data, error } = await authClient.signUp.email({
+          email,
+          password,
+          name, // Better Auth suele pedir nombre por defecto
+        });
+
+        if (error) {
+          toast.error(error.message || "Error al crear cuenta");
+        } else {
+          toast.success("Cuenta creada exitosamente");
+          navigate("/dashboard");
+        }
+      }
+    } catch (err) {
+      toast.error("Ocurrió un error inesperado");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -49,11 +81,31 @@ export default function Login() {
             <CardDescription>
               {mode === "login"
                 ? "Ingresa tu correo y contraseña para continuar"
-                : "Regístrate con tu correo electrónico"}
+                : "Regístrate para guardar tus cálculos"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form className="space-y-4">
+              
+              {/* Campo Nombre (Solo visible en Registro) */}
+              {mode === "register" && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                  <Label htmlFor="name">Nombre completo</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Juan Perez"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="pl-10 h-11"
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="email">Correo electrónico</Label>
                 <div className="relative">
@@ -87,30 +139,30 @@ export default function Login() {
               </div>
 
               <div className="flex flex-col gap-3 pt-2">
+                {/* Botón Principal (Cambia según el modo) */}
                 <Button
-                  type="submit"
+                  onClick={handleSubmit}
                   className="w-full h-12 text-base font-medium bg-gradient-primary"
                   disabled={isLoading}
-                  onClick={() => setMode("login")}
                 >
-                  {isLoading && mode === "login" ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Conectando...</>
+                  {isLoading ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Procesando...</>
                   ) : (
-                    "Iniciar sesión"
+                    mode === "login" ? "Ingresar" : "Registrarse"
                   )}
                 </Button>
+
+                {/* Botón para cambiar de modo */}
                 <Button
-                  type="submit"
-                  variant="outline"
-                  className="w-full h-12 text-base font-medium"
+                  type="button"
+                  variant="ghost"
+                  className="w-full text-sm text-muted-foreground hover:text-foreground"
                   disabled={isLoading}
-                  onClick={() => setMode("register")}
+                  onClick={() => setMode(mode === "login" ? "register" : "login")}
                 >
-                  {isLoading && mode === "register" ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creando cuenta...</>
-                  ) : (
-                    "Registrarse"
-                  )}
+                  {mode === "login" 
+                    ? "¿No tienes cuenta? Regístrate aquí" 
+                    : "¿Ya tienes cuenta? Inicia sesión"}
                 </Button>
               </div>
             </form>
