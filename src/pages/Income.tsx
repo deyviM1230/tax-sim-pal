@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useCalculationStore } from "@/stores/useCalculationStore";
 import { toast } from "sonner";
-import axios from "axios";
+import { api } from "@/lib/axios";
 
 const incomeSchema = z.object({
   renta4ta: z.coerce.number().min(0, "Debe ser mayor o igual a 0"),
@@ -81,7 +81,7 @@ export default function Income() {
       const payload = buildPayload(data);
       console.log("Enviando Payload:", payload);
 
-      const response = await axios.post("/api/auth/user-data", payload);
+      const response = await api.post("/auth/user-data", payload);
       const result = response.data;
       const isSuccess = result === true || result?.success === true;
 

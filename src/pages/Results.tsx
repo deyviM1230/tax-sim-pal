@@ -8,7 +8,7 @@ import { type TaxCalculationResult, UIT } from "@/mocks/taxData"; // Asegúrate 
 import ExpenseBar from "@/components/ExpenseBar";
 import { useCalculationStore } from "@/stores/useCalculationStore";
 import { toast } from "sonner";
-import axios from "axios";
+import { api } from "@/lib/axios";
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("es-PE", {
@@ -59,7 +59,7 @@ export default function Results() {
       setStatus("calculating");
       
       // AQUÍ ESTÁ EL GET QUE FALTABA
-      axios.get("/api/tax/init-calculation")
+      api.get("/tax/init-calculation")
         .then(() => {
             console.log("Orden de cálculo enviada correctamente");
         })
