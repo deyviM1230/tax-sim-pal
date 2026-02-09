@@ -3,14 +3,14 @@ import { z } from "zod";
 const dniSchema = z.object({
   documentType: z.literal("DNI"),
   document: z.string().length(8, "El DNI debe tener 8 dígitos").regex(/^\d+$/, "Solo números"),
-  solKey: z.string().min(1, "Clave SOL requerida"),
+  solkey: z.string().min(1, "Clave SOL requerida"), // Cambio: solkey (minúscula)
 });
 
 const rucSchema = z.object({
   documentType: z.literal("RUC"),
   document: z.string().length(11, "El RUC debe tener 11 dígitos").regex(/^\d+$/, "Solo números"),
   username: z.string().min(1, "Usuario requerido"),
-  solKey: z.string().min(1, "Clave SOL requerida"),
+  solkey: z.string().min(1, "Clave SOL requerida"), // Cambio: solkey (minúscula)
 });
 
 export const authSchema = z.discriminatedUnion("documentType", [rucSchema, dniSchema]);

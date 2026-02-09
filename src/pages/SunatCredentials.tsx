@@ -11,12 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { authSchema, type LoginRequest } from "@/lib/auth-schema";
 import { toast } from "sonner";
-// 1. IMPORTANTE: Importamos el store para guardar los datos
 import { useCalculationStore } from "@/stores/useCalculationStore";
 
 export default function SunatCredentials() {
   const navigate = useNavigate();
-  // 2. Obtenemos la función para guardar en el estado global
   const setTaxProfile = useCalculationStore((state) => state.setTaxProfile);
   
   const [tipoId, setTipoId] = useState<"RUC" | "DNI">("RUC");
@@ -28,36 +26,44 @@ export default function SunatCredentials() {
       documentType: "RUC",
       document: "",
       username: "",
-      solKey: "",
-    },
+      solkey: "", // Cambio: solkey (minúscula)
+    } as any, // 'as any' inicial para evitar conflictos de union en el default
   });
 
   const handleTipoChange = (value: "RUC" | "DNI") => {
     setTipoId(value);
+    
     if (value === "RUC") {
-      form.reset({ documentType: "RUC", document: "", username: "", solKey: "" });
+      // Caso RUC: Incluimos username
+      form.reset({ 
+        documentType: "RUC", 
+        document: "", 
+        username: "", 
+        solkey: "" 
+      });
     } else {
-      // TypeScript a veces se queja si username falta, así que lo pasamos undefined o vacío seguro
-      form.reset({ documentType: "DNI", document: "", solKey: "", username: undefined });
+      // Caso DNI: NO incluimos username para evitar el error de TS
+      form.reset({ 
+        documentType: "DNI", 
+        document: "", 
+        solkey: "" 
+      });
     }
   };
 
   const onSubmit = async (data: LoginRequest) => {
     setIsLoading(true);
-    
     try {
-      // 3. Guardamos los datos en el Store en lugar de solo esperar
-      // Esto hace que estén disponibles en la siguiente página (/ingresos)
+      // Guardamos en el store con la estructura correcta
       setTaxProfile({
         documentType: data.documentType,
         document: data.document,
+        // TypeScript sabe que si es RUC existe username
         username: data.documentType === "RUC" ? data.username : undefined,
-        solKey: data.solKey
+        solkey: data.solkey // Mapeamos solkey del form al store
       });
 
       toast.success("Datos guardados temporalmente");
-      
-      // 4. Ahora sí avanzamos
       navigate("/ingresos");
     } catch (error) {
       toast.error("Error al procesar los datos");
@@ -91,6 +97,8 @@ export default function SunatCredentials() {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                
+                {/* Selector de Tipo */}
                 <div className="space-y-2">
                   <Label>Tipo de identificación</Label>
                   <Select value={tipoId} onValueChange={handleTipoChange}>
@@ -108,6 +116,7 @@ export default function SunatCredentials() {
                   </Select>
                 </div>
 
+                {/* Campo Documento */}
                 <FormField
                   control={form.control}
                   name="document"
@@ -117,7 +126,7 @@ export default function SunatCredentials() {
                       <FormControl>
                         <div className="relative">
                           {tipoId === "RUC" ? <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                                             : <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />}
+                                           : <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />}
                           <Input {...field} placeholder={tipoId === "RUC" ? "20123456789" : "12345678"} maxLength={tipoId === "RUC" ? 11 : 8} className="pl-10 h-11" disabled={isLoading} />
                         </div>
                       </FormControl>
@@ -126,6 +135,7 @@ export default function SunatCredentials() {
                   )}
                 />
 
+                {/* Campo Usuario (Solo RUC) */}
                 {tipoId === "RUC" && (
                   <FormField
                     control={form.control}
@@ -145,9 +155,10 @@ export default function SunatCredentials() {
                   />
                 )}
 
+                {/* Campo Clave SOL (solkey) */}
                 <FormField
                   control={form.control}
-                  name="solKey"
+                  name="solkey" // Cambio: solkey (minúscula)
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Clave SOL</FormLabel>
