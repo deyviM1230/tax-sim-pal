@@ -31,7 +31,6 @@ export default function Income() {
   
   // Solo necesitamos un estado de carga
   const [isCalculating, setIsCalculating] = useState(false);
-
   if (!taxProfile) {
     navigate("/nuevo-calculo"); 
     return null;
